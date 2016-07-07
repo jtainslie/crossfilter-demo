@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Crossfilter Demo</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.3.5/css/AdminLTE.min.css">
+  <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
+        page. However, you can choose any other skin. Make sure you
+        apply the skin class to the body tag so the changes take effect.
+  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.3.5/css/skins/skin-blue.min.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/handsontable/0.26.0/handsontable.full.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/1.7.5/dc.min.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <style>
+    /*
+    bootstrap hack: fix content width inside hidden tabs
+    http://stackoverflow.com/a/23267110
+    */
+    .tab-content > .tab-pane:not(.active),
+    .pill-content > .pill-pane:not(.active) {
+        display: block;
+        height: 0;
+        overflow-y: hidden;
+    }
+    /* bootstrap hack end */
+
+
+    /* Custom CSS */
+
+    .sidebar-panel {
+      margin-top: 15px;
+      padding: 0px 15px;
+      overflow-x: hidden;
+    }
+
+    #dcjsCountSidebar {
+      color: white;
+    }
+
+    #downloadSelection {
+      margin-top: 10px;
+    }
+
+    #varSettingsHot {
+      margin: 10px 0px;
+      height: 300px;
+      overflow: hidden;
+    }
+
+    #dataPreviewHot {
+      width: auto;
+      height: 400px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<!--
+BODY TAG OPTIONS:
+=================
+Apply one or more of the following classes to get the
+desired effect
+|---------------------------------------------------------|
+| SKINS         | skin-blue                               |
+|               | skin-black                              |
+|               | skin-purple                             |
+|               | skin-yellow                             |
+|               | skin-red                                |
+|               | skin-green                              |
+|---------------------------------------------------------|
+|LAYOUT OPTIONS | fixed                                   |
+|               | layout-boxed                            |
+|               | layout-top-nav                          |
+|               | sidebar-collapse                        |
+|               | sidebar-mini                            |
+|---------------------------------------------------------|
+-->
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+  <!-- Main Header -->
+  <header class="main-header">
+
+    <!-- Logo -->
+    <a href="#" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini">&lt;&gt;</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg">Crossfilter Demo</span>
+    </a>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-static-top" role="navigation">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+      <!-- Navbar Right Menu -->
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+
+      <!-- Sidebar Menu -->
+      <ul class="sidebar-menu">
+        <!--<li class="header">HEADER</li>-->
+        <!-- Optionally, you can add icons to the links -->
+        <li><a href="#dataTab" data-toggle='tab'><i class="fa fa-link"></i> <span>Data</span></a></li>
+        <li class="active"><a href="#crossfilterTab" data-toggle='tab'><i class="fa fa-link"></i> <span>Crossfilter</span></a></li>
+      </ul>
+      <!-- /.sidebar-menu -->
+
+      <div class="sidebar-panel">
+        <div id='dcjsCountSidebar'>
+          <strong><span class='filter-count'></span></strong>
+          selected out of
+          <strong><span class='total-count'></span></strong>
+          records
+        </div>
+        <button id='downloadSelection' type="button" class="btn btn-sm">
+          Download Selection
+        </button>
+      </div>
+
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper tab-content">
+
+    <!-- dataTab -->
+    <div id='dataTab' class='tab-pane'>
+      <!-- Content Header (Page header) -->
+      <section class="content-header">
+        <h1>
+          Data
+        </h1>
+      </section>
+
+      <!-- Main content -->
+      <section class="content">
+        <!-- Your Page Content Here -->
+        <div class="box box-primary">
+          <div class="box-header">
+            <h3 class="box-title">Data Input</h3>
+            <div class='box-tools pull-right'>
+              <button class="btn btn-box-tool" data-widget="collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="box-body">
+            <input type="file" id="loadBundleFile" style="display:none">
+            <button id='loadBundle' type="button" class="btn btn-primary">Load Data Bundle</button>
+
+            <input type="file" id="importCsvFile" accept="text/csv" style="display:none">
+            <button id='importCsv' type="button" class="btn btn-primary">Import CSV</button>
+
+            <a href='#' data-toggle='modal' data-target='#csvFormatModal'>
+              CSV format assumptions
+            </a>
+
+            <h5>Chart Settings:</h5>
+            <div id='varSettingsHot'></div>
+
+            <button id='applyDataSettings' type="button" class="btn btn-primary">Apply Settings</button>
+            <button id='saveDataBundle' type="button" class="btn btn-primary">Save Data Bundle</button>
+          </div>
+        </div>
+
+        <div class="box box-primary">
+          <div class="box-header">
+            <h3 class="box-title">Data Preview</h3>
+            <div class='box-tools pull-right'>
+              <button class="btn btn-box-tool" data-widget="collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="box-body">
+            <div id="dataPreviewHot"></div>
+          </div>
+        </div>
+      </section>
+      <!-- /.content -->
+    </div>
+    <!-- /#dataTab -->
+
+    <!-- crossfilterTab -->
+    <div id='crossfilterTab' class='tab-pane active'>
+      <!-- Content Header (Page header) -->
+      <section class="content-header">
+        <h1>
+          Crossfilter
+        </h1>
+      </section>
+
+      <!-- Main content -->
+      <section class="content">
+        <!-- Your Page Content Here -->
+        <div class="box box-primary">
+          <div class="box-header">
+            <div id='dcjsCount' class='box-title'>
+              <strong><span class='filter-count'></span></strong>
+              selected out of
+              <strong><span class='total-count'></span></strong>
+              records
+            </div>
+            <div class='box-tools pull-right'>
+              <button id='dcjsResetAll' type="button" class="btn btn-primary btn-sm">
+                Reset All
+              </button>
+              &nbsp;&nbsp;
+              <button class="btn btn-box-tool" data-widget="collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="box-body">
+            <div id='dcjsContainer'></div>
+          </div>
+        </div>
+      </section>
+      <!-- /.content -->
+    </div>
+    <!-- /#crossfilterTab -->
+
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+    </div>
+    <!-- Default to the left -->
+    <strong><span class='app-version'></span></strong>
+  </footer>
+
+  <!-- Modal Dialog -->
+  <div id="csvFormatModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">CSV Format Assumptions</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+            Any CSV imported into this demo must meet the following
+            assumptions in order to be processed successfully as time
+            series data:
+            <ul>
+              <li>
+                The first row must consist of unique column headers.
+              </li>
+              <li>
+                The first column must contain the datetimes for the time
+                series.
+                The datetime format may be ISO 8601 (preferred), or
+                a "MM/DD/YYYY" style format with optional times
+                (e.g. as exported from Excel) interpreted using the
+                local time zone.
+                If datetime parsing fails for a particular cell, the
+                corresponding row will be dropped.
+              </li>
+              <li>
+                All other columns are treated as numeric columns.  Any
+                non-numeric cells will be parsed as "NaN" values.
+              </li>
+              <li>
+                The dataset must contain no more than 27 columns
+                (including the date column) since the crossfilter
+                library has a hard limit on the total number of
+                dimensions.
+              </li>
+            </ul>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.3.5/js/app.min.js"></script>
+
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.13.1/lodash.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.0/jszip.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/handsontable/0.26.0/handsontable.full.min.js'></script>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/dc/1.7.5/dc.min.js'></script>
+
+<script src='js/jsdataframe-min.js'></script>
+<script src='data/data_bundle.jsonp.js'></script>
+
+<script src='js/support.js'></script>
+<script src='js/main.js'></script>
+
+
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
+</body>
+</html>

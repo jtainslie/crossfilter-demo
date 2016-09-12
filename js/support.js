@@ -143,6 +143,8 @@ support.createDcjsChart = function($chartDiv, dim, group, settings) {
     default:
       throw new Error('unexpected chart type: ' + settings.chartType);
   }
+
+  return chart;
 };
 
 // Configure a barChart using the given settings

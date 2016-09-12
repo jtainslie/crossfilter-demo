@@ -12,10 +12,11 @@ jd.printingOpts.setMaxWidth(120);
 * Constants
 */
 
-var VERSION = '1.0.0';
+var VERSION = '1.1.0';
 
 var NUM_HIST_BINS = 40;
 var UI_DEBOUNCE_MILLIS = 100;
+var PLOTLY_DEBOUNCE_MILLIS = 300;
 
 var DATA_PREVIEW_NUM_ROWS = 100;
 
@@ -37,6 +38,14 @@ var appState = {
 
   dataPreviewHot: null,
   varSettingsHot: null,
+
+  plotlyChartType: 'scatter',
+  plotlySettings: {
+    bivariate: {
+      xVar: null,
+      yVar: null,
+    }
+  }
 };
 
 // Loads a new data bundle and refreshes the entire app state
@@ -46,6 +55,8 @@ appState.setDataBundle = function(dataBundle) {
   this.renderDataPreview(dataBundle.dataset.head(DATA_PREVIEW_NUM_ROWS));
   this.renderVarSettingsDf(dataBundle.settingsObj.varDf);
   this.renderDcjsWithSettings(dataBundle.settingsObj);
+  this._updatePlotlySettings();
+  this._renderPlotlyRaw();
 };
 
 // Renders the handsontable data preview using the given data frame
@@ -99,7 +110,62 @@ appState.applyCurrentSettings = function() {
   settingsObj.varDf = varDf;
   this.renderVarSettingsDf(varDf);
   this.renderDcjsWithSettings(settingsObj);
+  this._renderPlotlyRaw();
 };
+
+appState._renderPlotlyRaw = function() {
+  var xName = appState.plotlySettings.bivariate.xVar;
+  var yName = appState.plotlySettings.bivariate.yVar;
+  var objArray = support.extractSelected(appState.ndx);
+  var x = objArray.map(function(row) { return row[xName]; });
+  var y = objArray.map(function(row) { return row[yName]; });
+
+  var varDf = appState.dataBundle.settingsObj.varDf;
+  var xMin = varDf.locAt('Column Name', xName, 'Display Min');
+  var xMax = varDf.locAt('Column Name', xName, 'Display Max');
+  var yMin = varDf.locAt('Column Name', yName, 'Display Min');
+  var yMax = varDf.locAt('Column Name', yName, 'Display Max');
+
+  var data = [
+    {
+      x: x,
+      y: y,
+    }
+  ];
+  if (appState.plotlyChartType === 'hist2d') {
+    data[0].type = 'histogram2d';
+    data[0].colorscale = 'YIGnBu';
+  } else {
+    data[0].mode = 'markers';
+    data[0].type = 'scattergl';
+    data[0].marker = {opacity: 0.2};
+  }
+
+  var layout = {
+    autosize: true,
+    width: 730,
+    height: 620,
+    margin: {t: 30},
+    xaxis: {
+      range: [xMin, xMax],
+      title: xName,
+    },
+    yaxis: {
+      range: [yMin, yMax],
+      title: yName,
+    },
+  };
+
+  Plotly.purge('plotlyChart');
+  Plotly.newPlot('plotlyChart', data, layout, {modeBarButtonsToRemove: ['sendDataToCloud']});
+};
+
+appState.renderPlotly = _.debounce(function() {
+  if ($('#plotlyContainingBox').hasClass('collapsed-box')) {
+    return;
+  }
+  appState._renderPlotlyRaw();
+}, PLOTLY_DEBOUNCE_MILLIS);
 
 // Saves the given settings and refreshes all dc.js charts
 appState.renderDcjsWithSettings = function(settingsObj) {
@@ -156,8 +222,9 @@ appState.renderDcjsWithSettings = function(settingsObj) {
     var $chartDiv = $('<div>')
       .attr('id', chartId)
       .appendTo($dcjsContainer);
-    support.createDcjsChart(
+    var chart = support.createDcjsChart(
       $chartDiv, dimMap[dimCol], groupMap[dimCol], settings);
+    chart.on('filtered', appState.renderPlotly);
   });
 
   // Create data counts
@@ -226,6 +293,32 @@ appState._compileDcjsSettingsMap = function() {
   return settingsMap;
 };
 
+appState._updatePlotlySettings = function() {
+  var varColNames = appState.dataBundle.dataset.names().s(jd.ex(0)).values;
+
+  appState.plotlySettings.bivariate.yVar = varColNames[0];
+  var $select = $('#yVarSelect');
+  $select.empty();
+  varColNames.forEach(function(colName, i) {
+    var $option = $('<option>' + colName + '</option>');
+    if (i === 0) {
+      $option.prop('selected', true);
+    }
+    $option.appendTo($select);
+  });
+
+  appState.plotlySettings.bivariate.xVar = varColNames[1];
+  $select = $('#xVarSelect');
+  $select.empty();
+  varColNames.forEach(function(colName, i) {
+    var $option = $('<option>' + colName + '</option>');
+    if (i === 1) {
+      $option.prop('selected', true);
+    }
+    $option.appendTo($select);
+  });
+};
+
 
 /*-----------------------------------------------------------------------------
 * On document ready
@@ -287,6 +380,34 @@ $(document).ready(function() {
     appState.applyCurrentSettings();
     var bundleObj = support.packBundle(appState.dataBundle);
     support.downloadBundle(bundleObj);
+  });
+
+
+  // For plotly chart
+  $('#yVarSelect').change(function() {
+    appState.plotlySettings.bivariate.yVar = this.value;
+    appState._renderPlotlyRaw();
+  });
+
+  $('#xVarSelect').change(function() {
+    appState.plotlySettings.bivariate.xVar = this.value;
+    appState._renderPlotlyRaw();
+  });
+
+  $('#scatterButton').click(function() {
+    appState.plotlyChartType = 'scatter';
+    appState._renderPlotlyRaw();
+  });
+
+  $('#hist2dButton').click(function() {
+    appState.plotlyChartType = 'hist2d';
+    appState._renderPlotlyRaw();
+  });
+
+  $('#plotlyContainingBox div.box-header button.btn-box-tool').click(function() {
+    if ($('#plotlyContainingBox').hasClass('collapsed-box')) {
+      appState._renderPlotlyRaw();
+    }
   });
 
 

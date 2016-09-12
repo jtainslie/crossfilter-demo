@@ -246,6 +246,34 @@ desired effect
             <div id='dcjsContainer'></div>
           </div>
         </div>
+
+        <div class="box box-primary" id='plotlyContainingBox'>
+          <div class="box-header">
+            <h3 class="box-title">Bivariate Charts</h3>
+            <div class='box-tools pull-right'>
+              <button class="btn btn-box-tool" data-widget="collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="box-body">
+            Y Variable: <select id='yVarSelect'></select>
+            &nbsp;&nbsp;&nbsp;
+            X Variable: <select id='xVarSelect'></select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="btn-group" data-toggle="buttons">
+              <label id='scatterButton' class="btn btn-primary btn-sm active">
+                <input type="radio" name="options" id="option1" autocomplete="off" checked>
+                Scatter Plot
+              </label>
+              <label id='hist2dButton' class="btn btn-primary btn-sm">
+                <input type="radio" name="options" id="option2" autocomplete="off">
+                2D Histogram
+              </label>
+            </div>
+            <div id="plotlyChart"></div>
+          </div>
+        </div>
       </section>
       <!-- /.content -->
     </div>
@@ -335,6 +363,8 @@ desired effect
 <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/dc/1.7.5/dc.min.js'></script>
+
+<script type="text/javascript" src="https://cdn.plot.ly/plotly-1.16.3.min.js"></script>
 
 <script src='js/jsdataframe-min.js'></script>
 <script src='data/data_bundle.jsonp.js'></script>
